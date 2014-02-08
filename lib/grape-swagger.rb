@@ -159,7 +159,7 @@ module Grape
                     operation.merge!(:type => route.route_type)
                     operation.merge!(:items => route.route_items)
                   elsif route.route_entity.kind_of?(Array)
-                    operation.merge!(:type => parse_entity_name(route.route_entity[0])) if route.route_entity
+                    operation.merge!(:type => parse_entity_name(route.route_entity[-1])) if route.route_entity
                   else
                     operation.merge!(:type => parse_entity_name(route.route_entity)) if route.route_entity
                   end
