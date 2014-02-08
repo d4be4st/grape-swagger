@@ -142,7 +142,9 @@ module Grape
                   notes       = as_markdown(route.route_notes)
                   http_codes  = parse_http_codes(route.route_http_codes)
 
-                  models << route.route_entity if route.route_entity
+                  if route.route_entity
+                    models += route.route_entity.kind_of?(Array) ? route.route_entity : [route.route_entity]
+                  end
 
                   operation = {
                     :produces   => content_types_for(target_class),
@@ -153,9 +155,11 @@ module Grape
                     :parameters => parse_header_params(route.route_headers) +
                       parse_params(route.route_params, route.route_path, route.route_method)
                   }
-                  if route.route_type && route.route_entity
-                    operation.merge!(:type => :array)
-                    operation.merge!(:items => {"$ref" => parse_entity_name(route.route_entity)})
+                  if route.route_type
+                    operation.merge!(:type => route.route_type)
+                    operation.merge!(:items => route.route_items)
+                  elsif route.route_entity.kind_of?(Array)
+                    operation.merge!(:type => parse_entity_name(route.route_entity[0])) if route.route_entity
                   else
                     operation.merge!(:type => parse_entity_name(route.route_entity)) if route.route_entity
                   end
