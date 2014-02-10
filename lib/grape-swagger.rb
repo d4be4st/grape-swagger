@@ -142,9 +142,7 @@ module Grape
                   notes       = as_markdown(route.route_notes)
                   http_codes  = parse_http_codes(route.route_http_codes)
 
-                  if route.route_entity
-                    models += route.route_entity.kind_of?(Array) ? route.route_entity : [route.route_entity]
-                  end
+                  models += route.route_entity if route.route_entity
 
                   operation = {
                     :produces   => content_types_for(target_class),
@@ -158,10 +156,8 @@ module Grape
                   if route.route_type
                     operation.merge!(:type => route.route_type)
                     operation.merge!(:items => route.route_items)
-                  elsif route.route_entity.kind_of?(Array)
-                    operation.merge!(:type => parse_entity_name(route.route_entity[-1])) if route.route_entity
                   else
-                    operation.merge!(:type => parse_entity_name(route.route_entity)) if route.route_entity
+                    operation.merge!(:type => parse_entity_name(route.route_entity[-1])) if route.route_entity
                   end
                   operation.merge!(:responseMessages => http_codes) unless http_codes.empty?
                   operation
@@ -195,7 +191,6 @@ module Grape
 
             def parse_params(params, path, method)
               params ||= []
-
               params.map do |param, value|
                 value[:type] = 'file' if value.is_a?(Hash) && value[:type] == 'Rack::Multipart::UploadedFile'
 
@@ -203,10 +198,15 @@ module Grape
                 description = value.is_a?(Hash) ? value[:desc] || value[:description] : ''
                 required    = value.is_a?(Hash) ? !!value[:required] : false
                 defaultValue = value.is_a?(Hash) ? value[:defaultValue] : nil
-                paramType = if path.include?(":#{param}")
-                   'path'
+                if value.is_a?(Hash) && value[:type].include?("Requests")
+                  dataType = parse_entity_name value[:type]
+                  paramType = 'body'
                 else
-                  %w[ POST PUT PATCH ].include?(method) ? 'form' : 'query'
+                  paramType = if path.include?(":#{param}")
+                     'path'
+                  else
+                    %w[ POST PUT PATCH ].include?(method) ? 'form' : 'query'
+                  end
                 end
                 name        = (value.is_a?(Hash) && value[:full_name]) || param
 
@@ -287,9 +287,10 @@ module Grape
             end
 
             def parse_entity_name(name)
-              entity_parts = name.to_s.split('::')
-              entity_parts.reject! {|p| p == "Entity" || p == "Entities"}
-              entity_parts.join("::")
+              entity_parts = name.to_s.split('Entities::')
+              # entity_parts.reject! {|p| p == "Entity" || p == "Entities"}
+              # entity_parts.join("::")
+              entity_parts[-1]
             end
 
             def parse_entity_models(models)
