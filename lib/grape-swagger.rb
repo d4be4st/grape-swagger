@@ -155,7 +155,7 @@ module Grape
                   }
                   if route.route_type
                     operation.merge!(:type => route.route_type)
-                    operation.merge!(:items => route.route_items)
+                    operation.merge!(:items => parse_items(route.route_items))
                   else
                     operation.merge!(:type => parse_entity_name(route.route_entity[-1])) if route.route_entity
                   end
@@ -291,6 +291,12 @@ module Grape
               # entity_parts.reject! {|p| p == "Entity" || p == "Entities"}
               # entity_parts.join("::")
               entity_parts[-1]
+            end
+
+            def parse_items(items)
+              {
+                "$ref" => parse_entity_name(items)
+              }
             end
 
             def parse_entity_models(models)
