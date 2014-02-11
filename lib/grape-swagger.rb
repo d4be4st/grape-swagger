@@ -151,7 +151,8 @@ module Grape
                     :nickname   => route.route_nickname || (route.route_method + route.route_path.gsub(/[\/:\(\)\.]/,'-')),
                     :method => route.route_method,
                     :parameters => parse_header_params(route.route_headers) +
-                      parse_params(route.route_params, route.route_path, route.route_method)
+                      parse_params(route.route_params, route.route_path, route.route_method, route.route_body_param_type)+
+                      parse_body_param(route.route_body_param_type)
                   }
                   if route.route_type
                     operation.merge!(:type => route.route_type)
@@ -189,7 +190,22 @@ module Grape
               description && @@markdown ? Kramdown::Document.new(strip_heredoc(description), :input => 'GFM', :enable_coderay => false).to_html : description
             end
 
-            def parse_params(params, path, method)
+            def parse_body_param(body_param_type)
+              if body_param_type
+                [{
+                  paramType:    'body',
+                  name:         'body',
+                  description:  'Body',
+                  type:         parse_entity_name(body_param_type),
+                  dataType:     parse_entity_name(body_param_type),
+                  required:     false
+                }]
+              else
+                []
+              end
+            end
+
+            def parse_params(params, path, method, body_param_type)
               params ||= []
               params.map do |param, value|
                 value[:type] = 'file' if value.is_a?(Hash) && value[:type] == 'Rack::Multipart::UploadedFile'
@@ -198,16 +214,14 @@ module Grape
                 description = value.is_a?(Hash) ? value[:desc] || value[:description] : ''
                 required    = value.is_a?(Hash) ? !!value[:required] : false
                 defaultValue = value.is_a?(Hash) ? value[:defaultValue] : nil
-                if value.is_a?(Hash) && value[:type].include?("Requests")
-                  dataType = parse_entity_name value[:type]
-                  paramType = 'body'
+                paramType = if path.include?(":#{param}")
+                   'path'
                 else
-                  paramType = if path.include?(":#{param}")
-                     'path'
-                  else
-                    %w[ POST PUT PATCH ].include?(method) ? 'form' : 'query'
-                  end
+                  %w[ POST PUT PATCH ].include?(method) ? 'form' : 'query'
                 end
+
+                next if body_param_type && paramType != 'path'
+
                 name        = (value.is_a?(Hash) && value[:full_name]) || param
 
                 parsed_params = {
@@ -222,7 +236,7 @@ module Grape
                 parsed_params.merge!({defaultValue: defaultValue}) if defaultValue
 
                 parsed_params
-              end
+              end.compact
             end
 
             def content_types_for(target_class)
