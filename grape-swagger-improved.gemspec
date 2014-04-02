@@ -4,8 +4,8 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = "grape-swagger"
-  s.version = "0.7.6"
+  s.name = "grape-swagger-improved"
+  s.version = "0.7.7"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tim Vandecasteele"]
@@ -28,8 +28,8 @@ Gem::Specification.new do |s|
     "README.markdown",
     "Rakefile",
     "VERSION",
-    "grape-swagger.gemspec",
-    "lib/grape-swagger.rb",
+    "grape-swagger-improved.gemspec",
+    "lib/grape-swagger-improved.rb",
     "spec/api_models_spec.rb",
     "spec/default_api_spec.rb",
     "spec/form_params_spec.rb",
@@ -55,6 +55,7 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<grape>, [">= 0.2.0"])
       s.add_runtime_dependency(%q<grape-entity>, [">= 0.3.0"])
       s.add_runtime_dependency(%q<kramdown>, [">= 1.3.1"])
+      s.add_development_dependency('rake')
       s.add_development_dependency(%q<shoulda>, [">= 0"])
       s.add_development_dependency(%q<rdoc>, ["~> 3.12"])
       s.add_development_dependency(%q<bundler>, ["> 1.0.0"])

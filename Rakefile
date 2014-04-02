@@ -10,11 +10,16 @@ rescue Bundler::BundlerError => e
   exit e.status_code
 end
 require 'rake'
+require 'rake/clean'
+require 'rubygems/package_task'
+require 'rdoc/task'
+require "bundler/gem_tasks"
+
 
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "grape-swagger"
+  gem.name = "grape-swagger-improved"
   gem.homepage = "http://github.com/tim-vandecasteele/grape-swagger"
   gem.license = "MIT"
   gem.summary = %Q{Add swagger compliant documentation to your grape API}

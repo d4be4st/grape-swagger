@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'support'))
 
 require 'grape'
-require 'grape-swagger'
+require 'grape-swagger-improved'
 require 'grape-entity'
 
 require 'rubygems'
